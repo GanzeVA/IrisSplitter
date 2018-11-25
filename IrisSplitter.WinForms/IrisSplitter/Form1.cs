@@ -16,5 +16,20 @@ namespace IrisSplitter
         {
             InitializeComponent();
         }
+
+        private void loadImageToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            openFileDialog1.Title = "Load image";
+
+            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                //new Bitmap(openFileDialog1.OpenFile());
+            }
+        }
+
+        private void startBtn_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }
