@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,9 +13,20 @@ namespace IrisSplitter
 {
     public partial class Form1 : Form
     {
-        Bitmap image;
         Bitmap orgImage;
+        Bitmap outImage;
+        Bitmap grayscaleImage;
+        Bitmap pupilBinImage;
+        Bitmap pupilOpenedImage;
+        Bitmap pupilEdgeImage;
+        Bitmap whiteBinImage;
+        Bitmap whiteOpenedImage;
+        Bitmap whiteEdgeImage;
+        Bitmap irisRing;
+        Bitmap irisRectangle;
         Point pupilMiddle;
+        int pupilRadius;
+        int irisRadius;
 
         public Form1()
         {
@@ -27,38 +39,117 @@ namespace IrisSplitter
 
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
-                image = new Bitmap(openFileDialog1.OpenFile());
                 orgImage = new Bitmap(openFileDialog1.OpenFile());
-                pictureBox1.Image = image;
+                pictureBox1.Image = orgImage;
+                irisRingPictureBox.Image = null;
+                irisRectanglePictureBox.Image = null;
             }
         }
 
         private void startBtn_Click(object sender, EventArgs e)
         {
-            if (image != null)
+            if (orgImage != null)
             {
-                ChangeImage(Grayscale(image));
-                ChangeImage(Binaryzation(image));
-                ChangeImage(Erosion(image));
-                ChangeImage(Dilation(image));
+                grayscaleImage = Grayscale(orgImage);
+                pupilBinImage = BinaryzationPupil(grayscaleImage);
+                pupilOpenedImage = Dilation(Erosion(pupilBinImage));
+                pupilEdgeImage = RobertsCross(pupilOpenedImage);
 
-                ChangeImage(FindPupilMiddle(image));
+                whiteBinImage = BinaryzationWhite(grayscaleImage);
+                whiteOpenedImage = Dilation(Erosion(whiteBinImage));
+                whiteEdgeImage = RobertsCross(whiteOpenedImage);
 
-                ChangeImage(RobertsCross(image));
+                FindPupil();
+                FindIris();
+
+                DrawPupilAndIrisBorder();
+                SplitIrisRing();
+                SplitIrisRectangle();
+
+                Image saveImage = outImage;
+                saveImage.Save("outImage.png", ImageFormat.Png);
+                saveImage = irisRing;
+                saveImage.Save("irisRing.png", ImageFormat.Png);
+                saveImage = irisRectangle;
+                saveImage.Save("irisRectangle.png", ImageFormat.Png);
             }
+        }
 
+        private void SplitIrisRing()
+        {
+            irisRing = new Bitmap(irisRadius * 2, irisRadius * 2);
+            int xStart = pupilMiddle.X - irisRadius;
+            int yStart = pupilMiddle.Y - irisRadius;
+            
+            for (int y = yStart; y < pupilMiddle.Y + irisRadius; y++)
+            {
+                for (int x = xStart; x < pupilMiddle.X + irisRadius; x++)
+                {
+                    double d = Math.Sqrt(Math.Pow(pupilMiddle.X - x, 2) + Math.Pow(pupilMiddle.Y - y, 2));
+                    if (d <= irisRadius && d >= pupilRadius)
+                    {
+                        if (x - xStart >= 0 && y - yStart >= 0)
+                            irisRing.SetPixel(x - xStart, y - yStart, orgImage.GetPixel(x, y));
+                    }
+                    else
+                    {
+                        if (x - xStart >= 0 && y - yStart >= 0)
+                            irisRing.SetPixel(x - xStart, y - yStart, Color.FromArgb(0, 0, 0, 0));
+                    }
+                }
+            }
+            irisRingPictureBox.Image = irisRing;
+        }
+
+        private void SplitIrisRectangle()
+        {
+            irisRectangle = new Bitmap(200, 100);
+            int offsetX, offsetY;
+            offsetX = offsetY = 0;
+            for (int i = 0; i < irisRing.Width; i++)
+            {
+                for (int j = 0; j < irisRing.Height; j++)
+                {
+                    if (irisRing.GetPixel(i, j).ToArgb() != Color.FromArgb(0, 0, 0, 0).ToArgb())
+                    {
+                        double angle = Math.Atan2(j - (irisRing.Height / 2), i - (irisRing.Width / 2)) - Math.Atan2(0, irisRing.Width / 2);
+                        double d = Math.Sqrt(Math.Pow((irisRing.Width / 2) - i, 2) + Math.Pow((irisRing.Height / 2) - j, 2));
+                        int x = (int)Math.Round(d * Math.Cos(angle));
+                        int y = (int)Math.Round(d * Math.Sin(angle));
+                        if (i == 0 && j == 0)
+                        {
+                            offsetX = -x;
+                            offsetY = -y;
+                        }
+                        if (x + offsetX >= 0 && y + offsetY >= 0 && x + offsetX < irisRectangle.Width && y + offsetY < irisRectangle.Height)
+                            irisRectangle.SetPixel(x + offsetX, y + offsetY, irisRing.GetPixel(i, j));
+                    }
+                }
+            }
+            irisRectanglePictureBox.Image = irisRectangle;
         }
 
         private void ChangeImage(Bitmap b)
         {
-            image = b;
-            pictureBox1.Image = image;
+            pictureBox1.Image = b;
             pictureBox1.Refresh();
             System.Threading.Thread.Sleep(1000);
         }
 
-        private Bitmap Grayscale(Bitmap b)
+        private void DrawPupilAndIrisBorder()
         {
+            Bitmap b = new Bitmap(orgImage);
+            Graphics g = Graphics.FromImage(b);
+            Pen p = new Pen(Color.Red);
+            g.DrawEllipse(p, pupilMiddle.X - pupilRadius, pupilMiddle.Y - pupilRadius, pupilRadius + pupilRadius, pupilRadius + pupilRadius);
+            g.DrawEllipse(p, pupilMiddle.X - irisRadius, pupilMiddle.Y - irisRadius, irisRadius + irisRadius, irisRadius + irisRadius);
+            ChangeImage(b);
+            outImage = new Bitmap(b);
+        }
+
+        private Bitmap Grayscale(Bitmap borg)
+        {
+            Bitmap b = new Bitmap(borg);
             for (int i = 0; i < b.Width; i++)
             {
                 for (int j = 0; j < b.Height; j++)
@@ -70,8 +161,9 @@ namespace IrisSplitter
             return b;
         }
 
-        private Bitmap Binaryzation(Bitmap b)
+        private Bitmap BinaryzationPupil(Bitmap borg)
         {
+            Bitmap b = new Bitmap(borg);
             int threshold = Otsu(b) / 5;
             for (int i = 0; i < b.Width; i++)
             {
@@ -84,6 +176,27 @@ namespace IrisSplitter
                     else
                     {
                         b.SetPixel(i, j, Color.White);
+                    }
+                }
+            }
+            return b;
+        }
+
+        private Bitmap BinaryzationWhite(Bitmap borg)
+        {
+            Bitmap b = new Bitmap(borg);
+            int threshold = (int)((double)Otsu(b) * 1.1);
+            for (int i = 0; i < b.Width; i++)
+            {
+                for (int j = 0; j < b.Height; j++)
+                {
+                    if (b.GetPixel(i, j).R > threshold)
+                    {
+                        b.SetPixel(i, j, Color.White);
+                    }
+                    else
+                    {
+                        b.SetPixel(i, j, Color.Black);
                     }
                 }
             }
@@ -115,21 +228,19 @@ namespace IrisSplitter
             int threshold = 0;
             for (int i = 0; i < 256; i++)
             {
-                wB += histogram[i];               // Weight Background
+                wB += histogram[i];
                 if (wB == 0) continue;
 
-                wF = total - wB;                 // Weight Foreground
+                wF = total - wB;
                 if (wF == 0) break;
 
                 sumB += (float)(i * histogram[i]);
 
-                float mB = sumB / wB;            // Mean Background
-                float mF = (sum - sumB) / wF;    // Mean Foreground
+                float mB = sumB / wB;
+                float mF = (sum - sumB) / wF;
 
-                // Calculate Between Class Variance
                 float varBetween = (float)wB * (float)wF * (mB - mF) * (mB - mF);
 
-                // Check if new maximum found
                 if (varBetween > varMax)
                 {
                     varMax = varBetween;
@@ -189,43 +300,96 @@ namespace IrisSplitter
             return bnew;
         }
 
-        private Bitmap FindPupilMiddle(Bitmap b)
+        private void FindPupil()
         {
-            int[] xValues = new int[b.Width];
-            int[] yValues = new int[b.Height];
-            for (int i = 0; i < b.Width; i++)
+            int[] xValues = new int[pupilOpenedImage.Width];
+            int[] yValues = new int[pupilOpenedImage.Height];
+            for (int i = 0; i < pupilOpenedImage.Width; i++)
             {
-                for (int j = 0; j < b.Height; j++)
+                for (int j = 0; j < pupilOpenedImage.Height; j++)
                 {
-                    if (b.GetPixel(i, j).ToArgb() == Color.Black.ToArgb())
+                    if (pupilOpenedImage.GetPixel(i, j).ToArgb() == Color.Black.ToArgb())
                     {
-                        xValues[i] ++;
-                        yValues[j] ++;
+                        xValues[i]++;
+                        yValues[j]++;
                     }
                 }
             }
             int xMax, yMax;
             xMax = yMax = 0;
-            for (int i = 0; i < b.Width; i++)
+            for (int i = 0; i < pupilOpenedImage.Width; i++)
             {
                 if (xValues[i] > xValues[xMax])
                     xMax = i;
             }
-            for (int i = 0; i < b.Height; i++)
+            for (int i = 0; i < pupilOpenedImage.Height; i++)
             {
                 if (yValues[i] > yValues[yMax])
                     yMax = i;
             }
             pupilMiddle = new Point(xMax, yMax);
-            for (int i = -3; i <= 3; i++)
+
+            int xLeft, xRight, yUp, yDown;
+            xLeft = xRight = pupilMiddle.X;
+            yUp = yDown = pupilMiddle.Y;
+            for (int i = pupilMiddle.X; i >= 0; i--)
             {
-                for (int j = -3; j <= 3; j++)
+                if (pupilOpenedImage.GetPixel(i, pupilMiddle.Y).ToArgb() != Color.Black.ToArgb())
                 {
-                    b.SetPixel(xMax + i, yMax + j, Color.Red);
+                    xLeft = i;
+                    break;
                 }
             }
-            
-            return b;
+            for (int i = pupilMiddle.X; i < pupilEdgeImage.Width; i++)
+            {
+                if (pupilEdgeImage.GetPixel(i, pupilMiddle.Y).ToArgb() != Color.Black.ToArgb())
+                {
+                    xRight = i;
+                    break;
+                }
+            }
+            for (int i = pupilMiddle.Y; i >= 0; i--)
+            {
+                if (pupilEdgeImage.GetPixel(pupilMiddle.X, i).ToArgb() != Color.Black.ToArgb())
+                {
+                    yUp = i;
+                    break;
+                }
+            }
+            for (int i = pupilMiddle.Y; i < pupilEdgeImage.Height; i++)
+            {
+                if (pupilEdgeImage.GetPixel(pupilMiddle.X, i).ToArgb() != Color.Black.ToArgb())
+                {
+                    yDown = i;
+                    break;
+                }
+            }
+            pupilMiddle = new Point((xLeft + xRight) / 2, (yUp + yDown) / 2);
+            pupilRadius = Math.Max(Math.Max(Math.Max(Math.Abs(pupilMiddle.X - xLeft), Math.Abs(pupilMiddle.X - xRight)), Math.Abs(pupilMiddle.Y - yUp)), Math.Abs(pupilMiddle.Y - yDown));
+        }
+
+        private void FindIris()
+        {
+            int xLeft, xRight, yUp, yDown;
+            xLeft = xRight = pupilMiddle.X;
+            yUp = yDown = pupilMiddle.Y;
+            for (int i = pupilMiddle.X; i >= 0; i--)
+            {
+                if (whiteOpenedImage.GetPixel(i, pupilMiddle.Y).ToArgb() != Color.Black.ToArgb())
+                {
+                    xLeft = i;
+                    break;
+                }
+            }
+            for (int i = pupilMiddle.X; i < pupilEdgeImage.Width; i++)
+            {
+                if (whiteOpenedImage.GetPixel(i, pupilMiddle.Y).ToArgb() != Color.Black.ToArgb())
+                {
+                    xRight = i;
+                    break;
+                }
+            }
+            irisRadius = Math.Max(Math.Max(Math.Abs(pupilMiddle.X - xLeft), Math.Abs(pupilMiddle.X - xRight)), pupilRadius);
         }
 
         private Bitmap RobertsCross(Bitmap borg)
@@ -252,6 +416,24 @@ namespace IrisSplitter
                 }
             }
             return b;
+        }
+
+        private void example1jpgToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            orgImage = Properties.Resources.Example1;
+            pictureBox1.Image = orgImage;
+            irisRingPictureBox.Image = null;
+            irisRectanglePictureBox.Image = null;
+        }
+
+        private void example2jpgToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void example3jpgToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }
