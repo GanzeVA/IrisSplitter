@@ -30,6 +30,9 @@
         {
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.loadImageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.example1jpgToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.example2jpgToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.chooseImageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
             this.startBtn = new System.Windows.Forms.Button();
@@ -38,13 +41,7 @@
             this.tableLayoutPanel3 = new System.Windows.Forms.TableLayoutPanel();
             this.irisRingGroupBox = new System.Windows.Forms.GroupBox();
             this.irisRingPictureBox = new System.Windows.Forms.PictureBox();
-            this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.irisRectanglePictureBox = new System.Windows.Forms.PictureBox();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
-            this.example1jpgToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.example2jpgToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.example3jpgToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.chooseImageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             this.flowLayoutPanel1.SuspendLayout();
@@ -53,8 +50,6 @@
             this.tableLayoutPanel3.SuspendLayout();
             this.irisRingGroupBox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.irisRingPictureBox)).BeginInit();
-            this.groupBox1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.irisRectanglePictureBox)).BeginInit();
             this.SuspendLayout();
             // 
             // menuStrip1
@@ -72,11 +67,31 @@
             this.loadImageToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.example1jpgToolStripMenuItem,
             this.example2jpgToolStripMenuItem,
-            this.example3jpgToolStripMenuItem,
             this.chooseImageToolStripMenuItem});
             this.loadImageToolStripMenuItem.Name = "loadImageToolStripMenuItem";
             this.loadImageToolStripMenuItem.Size = new System.Drawing.Size(81, 20);
             this.loadImageToolStripMenuItem.Text = "Load image";
+            // 
+            // example1jpgToolStripMenuItem
+            // 
+            this.example1jpgToolStripMenuItem.Name = "example1jpgToolStripMenuItem";
+            this.example1jpgToolStripMenuItem.Size = new System.Drawing.Size(159, 22);
+            this.example1jpgToolStripMenuItem.Text = "Example1.jpg";
+            this.example1jpgToolStripMenuItem.Click += new System.EventHandler(this.example1jpgToolStripMenuItem_Click);
+            // 
+            // example2jpgToolStripMenuItem
+            // 
+            this.example2jpgToolStripMenuItem.Name = "example2jpgToolStripMenuItem";
+            this.example2jpgToolStripMenuItem.Size = new System.Drawing.Size(159, 22);
+            this.example2jpgToolStripMenuItem.Text = "Example2.jpg";
+            this.example2jpgToolStripMenuItem.Click += new System.EventHandler(this.example2jpgToolStripMenuItem_Click);
+            // 
+            // chooseImageToolStripMenuItem
+            // 
+            this.chooseImageToolStripMenuItem.Name = "chooseImageToolStripMenuItem";
+            this.chooseImageToolStripMenuItem.Size = new System.Drawing.Size(159, 22);
+            this.chooseImageToolStripMenuItem.Text = "Choose image...";
+            this.chooseImageToolStripMenuItem.Click += new System.EventHandler(this.loadImageToolStripMenuItem_Click);
             // 
             // tableLayoutPanel1
             // 
@@ -143,7 +158,6 @@
             this.tableLayoutPanel3.ColumnCount = 1;
             this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
             this.tableLayoutPanel3.Controls.Add(this.irisRingGroupBox, 0, 0);
-            this.tableLayoutPanel3.Controls.Add(this.groupBox1, 0, 1);
             this.tableLayoutPanel3.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel3.Location = new System.Drawing.Point(675, 3);
             this.tableLayoutPanel3.Name = "tableLayoutPanel3";
@@ -174,58 +188,9 @@
             this.irisRingPictureBox.TabIndex = 0;
             this.irisRingPictureBox.TabStop = false;
             // 
-            // groupBox1
-            // 
-            this.groupBox1.Controls.Add(this.irisRectanglePictureBox);
-            this.groupBox1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.groupBox1.Location = new System.Drawing.Point(3, 197);
-            this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(225, 188);
-            this.groupBox1.TabIndex = 1;
-            this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "Iris Rectangle";
-            // 
-            // irisRectanglePictureBox
-            // 
-            this.irisRectanglePictureBox.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.irisRectanglePictureBox.Location = new System.Drawing.Point(3, 16);
-            this.irisRectanglePictureBox.Name = "irisRectanglePictureBox";
-            this.irisRectanglePictureBox.Size = new System.Drawing.Size(219, 169);
-            this.irisRectanglePictureBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
-            this.irisRectanglePictureBox.TabIndex = 1;
-            this.irisRectanglePictureBox.TabStop = false;
-            // 
             // openFileDialog1
             // 
             this.openFileDialog1.FileName = "openFileDialog1";
-            // 
-            // example1jpgToolStripMenuItem
-            // 
-            this.example1jpgToolStripMenuItem.Name = "example1jpgToolStripMenuItem";
-            this.example1jpgToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.example1jpgToolStripMenuItem.Text = "Example1.jpg";
-            this.example1jpgToolStripMenuItem.Click += new System.EventHandler(this.example1jpgToolStripMenuItem_Click);
-            // 
-            // example2jpgToolStripMenuItem
-            // 
-            this.example2jpgToolStripMenuItem.Name = "example2jpgToolStripMenuItem";
-            this.example2jpgToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.example2jpgToolStripMenuItem.Text = "Example2.jpg";
-            this.example2jpgToolStripMenuItem.Click += new System.EventHandler(this.example2jpgToolStripMenuItem_Click);
-            // 
-            // example3jpgToolStripMenuItem
-            // 
-            this.example3jpgToolStripMenuItem.Name = "example3jpgToolStripMenuItem";
-            this.example3jpgToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.example3jpgToolStripMenuItem.Text = "Example3.jpg";
-            this.example3jpgToolStripMenuItem.Click += new System.EventHandler(this.example3jpgToolStripMenuItem_Click);
-            // 
-            // chooseImageToolStripMenuItem
-            // 
-            this.chooseImageToolStripMenuItem.Name = "chooseImageToolStripMenuItem";
-            this.chooseImageToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.chooseImageToolStripMenuItem.Text = "Choose image...";
-            this.chooseImageToolStripMenuItem.Click += new System.EventHandler(this.loadImageToolStripMenuItem_Click);
             // 
             // Form1
             // 
@@ -247,8 +212,6 @@
             this.tableLayoutPanel3.ResumeLayout(false);
             this.irisRingGroupBox.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.irisRingPictureBox)).EndInit();
-            this.groupBox1.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.irisRectanglePictureBox)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -266,12 +229,9 @@
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel2;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel3;
         private System.Windows.Forms.PictureBox irisRingPictureBox;
-        private System.Windows.Forms.PictureBox irisRectanglePictureBox;
         private System.Windows.Forms.GroupBox irisRingGroupBox;
-        private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.ToolStripMenuItem example1jpgToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem example2jpgToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem example3jpgToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem chooseImageToolStripMenuItem;
     }
 }

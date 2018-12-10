@@ -23,7 +23,6 @@ namespace IrisSplitter
         Bitmap whiteOpenedImage;
         Bitmap whiteEdgeImage;
         Bitmap irisRing;
-        Bitmap irisRectangle;
         Point pupilMiddle;
         int pupilRadius;
         int irisRadius;
@@ -42,7 +41,6 @@ namespace IrisSplitter
                 orgImage = new Bitmap(openFileDialog1.OpenFile());
                 pictureBox1.Image = orgImage;
                 irisRingPictureBox.Image = null;
-                irisRectanglePictureBox.Image = null;
             }
         }
 
@@ -64,14 +62,11 @@ namespace IrisSplitter
 
                 DrawPupilAndIrisBorder();
                 SplitIrisRing();
-                SplitIrisRectangle();
 
                 Image saveImage = outImage;
                 saveImage.Save("outImage.png", ImageFormat.Png);
                 saveImage = irisRing;
                 saveImage.Save("irisRing.png", ImageFormat.Png);
-                saveImage = irisRectangle;
-                saveImage.Save("irisRectangle.png", ImageFormat.Png);
             }
         }
 
@@ -88,52 +83,17 @@ namespace IrisSplitter
                     double d = Math.Sqrt(Math.Pow(pupilMiddle.X - x, 2) + Math.Pow(pupilMiddle.Y - y, 2));
                     if (d <= irisRadius && d >= pupilRadius)
                     {
-                        if (x - xStart >= 0 && y - yStart >= 0)
+                        if (x - xStart >= 0 && y - yStart >= 0 && x - xStart < irisRing.Width && y - yStart < irisRing.Height)
                             irisRing.SetPixel(x - xStart, y - yStart, orgImage.GetPixel(x, y));
                     }
                     else
                     {
-                        if (x - xStart >= 0 && y - yStart >= 0)
+                        if (x - xStart >= 0 && y - yStart >= 0 && x - xStart < irisRing.Width && y - yStart < irisRing.Height)
                             irisRing.SetPixel(x - xStart, y - yStart, Color.FromArgb(0, 0, 0, 0));
                     }
                 }
             }
             irisRingPictureBox.Image = irisRing;
-        }
-
-        private void SplitIrisRectangle()
-        {
-            irisRectangle = new Bitmap(200, 100);
-            int offsetX, offsetY;
-            offsetX = offsetY = 0;
-            for (int i = 0; i < irisRing.Width; i++)
-            {
-                for (int j = 0; j < irisRing.Height; j++)
-                {
-                    if (irisRing.GetPixel(i, j).ToArgb() != Color.FromArgb(0, 0, 0, 0).ToArgb())
-                    {
-                        double angle = Math.Atan2(j - (irisRing.Height / 2), i - (irisRing.Width / 2)) - Math.Atan2(0, irisRing.Width / 2);
-                        double d = Math.Sqrt(Math.Pow((irisRing.Width / 2) - i, 2) + Math.Pow((irisRing.Height / 2) - j, 2));
-                        int x = (int)Math.Round(d * Math.Cos(angle));
-                        int y = (int)Math.Round(d * Math.Sin(angle));
-                        if (i == 0 && j == 0)
-                        {
-                            offsetX = -x;
-                            offsetY = -y;
-                        }
-                        if (x + offsetX >= 0 && y + offsetY >= 0 && x + offsetX < irisRectangle.Width && y + offsetY < irisRectangle.Height)
-                            irisRectangle.SetPixel(x + offsetX, y + offsetY, irisRing.GetPixel(i, j));
-                    }
-                }
-            }
-            irisRectanglePictureBox.Image = irisRectangle;
-        }
-
-        private void ChangeImage(Bitmap b)
-        {
-            pictureBox1.Image = b;
-            pictureBox1.Refresh();
-            System.Threading.Thread.Sleep(1000);
         }
 
         private void DrawPupilAndIrisBorder()
@@ -143,7 +103,8 @@ namespace IrisSplitter
             Pen p = new Pen(Color.Red);
             g.DrawEllipse(p, pupilMiddle.X - pupilRadius, pupilMiddle.Y - pupilRadius, pupilRadius + pupilRadius, pupilRadius + pupilRadius);
             g.DrawEllipse(p, pupilMiddle.X - irisRadius, pupilMiddle.Y - irisRadius, irisRadius + irisRadius, irisRadius + irisRadius);
-            ChangeImage(b);
+            pictureBox1.Image = b;
+            pictureBox1.Refresh();
             outImage = new Bitmap(b);
         }
 
@@ -154,7 +115,7 @@ namespace IrisSplitter
             {
                 for (int j = 0; j < b.Height; j++)
                 {
-                    int n = (b.GetPixel(i, j).R + b.GetPixel(i, j).G + b.GetPixel(i, j).B) / 3;
+                    int n = (int)(b.GetPixel(i, j).R * 0.299 + b.GetPixel(i, j).G * 0.587 + b.GetPixel(i, j).B * 0.114);
                     b.SetPixel(i, j, Color.FromArgb(n, n, n));
                 }
             }
@@ -375,7 +336,7 @@ namespace IrisSplitter
             yUp = yDown = pupilMiddle.Y;
             for (int i = pupilMiddle.X; i >= 0; i--)
             {
-                if (whiteOpenedImage.GetPixel(i, pupilMiddle.Y).ToArgb() != Color.Black.ToArgb())
+                if (whiteEdgeImage.GetPixel(i, pupilMiddle.Y).ToArgb() != Color.Black.ToArgb())
                 {
                     xLeft = i;
                     break;
@@ -383,7 +344,7 @@ namespace IrisSplitter
             }
             for (int i = pupilMiddle.X; i < pupilEdgeImage.Width; i++)
             {
-                if (whiteOpenedImage.GetPixel(i, pupilMiddle.Y).ToArgb() != Color.Black.ToArgb())
+                if (whiteEdgeImage.GetPixel(i, pupilMiddle.Y).ToArgb() != Color.Black.ToArgb())
                 {
                     xRight = i;
                     break;
@@ -423,17 +384,13 @@ namespace IrisSplitter
             orgImage = Properties.Resources.Example1;
             pictureBox1.Image = orgImage;
             irisRingPictureBox.Image = null;
-            irisRectanglePictureBox.Image = null;
         }
 
         private void example2jpgToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
-        }
-
-        private void example3jpgToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-
+            orgImage = Properties.Resources.Example2;
+            pictureBox1.Image = orgImage;
+            irisRingPictureBox.Image = null;
         }
     }
 }
